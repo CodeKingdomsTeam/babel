@@ -56,7 +56,7 @@ function compile(code, filename) {
 
   if (env) cacheKey += `:${env}`;
 
-  let cached = cache && cache[cacheKey];
+  let cached = cache.get(cacheKey);
 
   if (!cached || cached.mtime !== mtime(filename)) {
     cached = babel.transform(code, {
@@ -66,8 +66,8 @@ function compile(code, filename) {
     });
 
     if (cache) {
-      cache[cacheKey] = cached;
       cached.mtime = mtime(filename);
+      cache.set(cacheKey, cached);
     }
   }
 
@@ -116,8 +116,7 @@ export default function register(opts?: Object = {}) {
     registerCache.clear();
     cache = null;
   } else if (opts.cache !== false && !cache) {
-    registerCache.load();
-    cache = registerCache.get();
+    cache = registerCache;
   }
 
   delete opts.extensions;
